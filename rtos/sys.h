@@ -8,7 +8,7 @@
 #define INSERT_TO_HEAD 0
 
 typedef struct Type_Task {
-    int ref;
+    int ref; // »ндекс следующей задачи в очереди того же приоритета
     int priority;
     void (*entry)(void);
     char* name;
@@ -25,7 +25,14 @@ typedef struct {
     int signaled;
 } TEvent;
 
+// ћассив очередей: кажда€ очередь соответствует уровню приоритета
+typedef struct {
+    int head; // »ндекс первой задачи в очереди
+    int tail; // »ндекс последней задачи в очереди
+} PriorityQueue;
+
 extern TTask TaskQueue[MAX_TASK];
+extern PriorityQueue PriorityQueues[MAX_PRIORITY];
 extern TResource ResourceQueue[MAX_RES];
 extern TEvent EventQueue[MAX_EVENTS];
 extern int RunningTask;

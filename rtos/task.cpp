@@ -18,6 +18,7 @@ void ActivateTask(TTaskCall entry, int priority, char* name) {
     TaskQueue[occupy].priority = priority;
     TaskQueue[occupy].name = name;
     TaskQueue[occupy].entry = entry;
+    TaskQueue[occupy].ref = -1;
 
     Schedule(occupy, INSERT_TO_TAIL);
 
@@ -35,17 +36,38 @@ void TerminateTask(void) {
 
     printf("TerminateTask %s\n", TaskQueue[task].name);
 
-    RunningTask = TaskQueue[task].ref;
+    // Удаляем задачу из очереди
+    int priority = TaskQueue[task].priority;
+    if (PriorityQueues[priority].head == task) {
+        PriorityQueues[priority].head = TaskQueue[task].ref;
+        if (PriorityQueues[priority].head == -1) {
+            PriorityQueues[priority].tail = -1;
+        }
+    }
+    else {
+        int prev = PriorityQueues[priority].head;
+        while (prev != -1 && TaskQueue[prev].ref != task) {
+            prev = TaskQueue[prev].ref;
+        }
+        if (prev != -1) {
+            TaskQueue[prev].ref = TaskQueue[task].ref;
+            if (PriorityQueues[priority].tail == task) {
+                PriorityQueues[priority].tail = prev;
+            }
+        }
+    }
+
+    RunningTask = -1; // После завершения задачи выбираем новую
+    Dispatch(-1); // Выбираем следующую задачу
 
     TaskQueue[task].ref = FreeTask;
-    TaskQueue[task].name = NULL; // Очищаем имя для избежания "Schedule (null)"
+    TaskQueue[task].name = NULL;
     FreeTask = task;
 
     printf("End of TerminateTask %s\n", TaskQueue[task].name ? TaskQueue[task].name : "(null)");
 }
 
 void Schedule(int task, int mode) {
-    int cur, prev;
     int priority;
 
     if (TaskQueue[task].name == NULL) {
@@ -55,27 +77,35 @@ void Schedule(int task, int mode) {
 
     printf("Schedule %s\n", TaskQueue[task].name);
 
-    cur = RunningTask;
-    prev = -1;
-
     priority = TaskQueue[task].priority;
 
-    while (cur != -1 && TaskQueue[cur].priority > priority) {
-        prev = cur;
-        cur = TaskQueue[cur].ref;
+    // Добавляем задачу в очередь соответствующего уровня приоритета
+    if (PriorityQueues[priority].head == -1) {
+        PriorityQueues[priority].head = task;
+        PriorityQueues[priority].tail = task;
+        TaskQueue[task].ref = -1;
     }
-
-    if (mode == INSERT_TO_TAIL) {
-        while (cur != -1 && TaskQueue[cur].priority == priority) {
-            prev = cur;
-            cur = TaskQueue[cur].ref;
+    else {
+        if (mode == INSERT_TO_TAIL) {
+            TaskQueue[PriorityQueues[priority].tail].ref = task;
+            PriorityQueues[priority].tail = task;
+            TaskQueue[task].ref = -1;
+        }
+        else {
+            TaskQueue[task].ref = PriorityQueues[priority].head;
+            PriorityQueues[priority].head = task;
         }
     }
 
-    TaskQueue[task].ref = cur;
-
-    if (prev == -1) RunningTask = task;
-    else TaskQueue[prev].ref = task;
+    // Выбираем новую задачу для выполнения
+    int i;
+    RunningTask = -1;
+    for (i = MAX_PRIORITY - 1; i >= 0; i--) {
+        if (PriorityQueues[i].head != -1) {
+            RunningTask = PriorityQueues[i].head;
+            break;
+        }
+    }
 
     printf("End of Schedule %s\n", TaskQueue[task].name);
 }
@@ -83,7 +113,6 @@ void Schedule(int task, int mode) {
 void Dispatch(int task) {
     printf("Dispatch\n");
 
-    // Выполняем только текущую задачу с наивысшим приоритетом
     if (RunningTask != -1) {
         TaskQueue[RunningTask].entry();
     }

@@ -31,6 +31,12 @@ int StartOS(TTaskCall entry, int priority, char* name) {
         EventQueue[i].signaled = 0;
     }
 
+    // Инициализация очередей по уровням приоритета
+    for (i = 0; i < MAX_PRIORITY; i++) {
+        PriorityQueues[i].head = -1;
+        PriorityQueues[i].tail = -1;
+    }
+
     ActivateTask(entry, priority, name);
 
     return 0;
@@ -42,10 +48,9 @@ void ShutdownOS() {
 
 void WaitEvent(int event_id) {
     if (event_id >= 0 && event_id < MAX_EVENTS) {
-        int timeout = 10; // Добавляем тайм-аут
+        int timeout = 10;
         while (!EventQueue[event_id].signaled && timeout > 0) {
             timeout--;
-            // Здесь можно добавить переключение контекста, но для простоты используем тайм-аут
         }
         if (EventQueue[event_id].signaled) {
             EventQueue[event_id].signaled = 0;
