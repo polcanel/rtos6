@@ -1,5 +1,5 @@
 /****************************************/
-/*               sys.h                   /          
+/*               sys.h                   */
 /****************************************/
 
 #include "defs.h"
@@ -7,35 +7,30 @@
 #define INSERT_TO_TAIL 1
 #define INSERT_TO_HEAD 0
 
-typedef struct Type_Task
-{
-	int ref;
-	int priority;
-	int ceiling_priority;
-	void (*entry)(void);
-	char* name;
-
+typedef struct Type_Task {
+    int ref;
+    int priority;
+    void (*entry)(void);
+    char* name;
 } TTask;
 
-typedef struct Type_resource
-{
-	int task;
-	int priority;
-	char* name;
-
+typedef struct Type_resource {
+    int task;
+    int priority;
+    char* name;
 } TResource;
 
+typedef struct {
+    int event_id;
+    int signaled;
+} TEvent;
+
 extern TTask TaskQueue[MAX_TASK];
-
 extern TResource ResourceQueue[MAX_RES];
-
+extern TEvent EventQueue[MAX_EVENTS];
 extern int RunningTask;
-
 extern int FreeTask;
-
 extern int FreeResource;
 
-void Schedule(int task,int mode);
-
+void Schedule(int task, int mode);
 void Dispatch(int task);
-

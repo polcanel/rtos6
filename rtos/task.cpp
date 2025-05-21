@@ -2,101 +2,91 @@
 /*          task.c               */
 /*********************************/
 #include <stdio.h>
-
 #include "sys.h"
 #include "rtos_api.h"
 
-void ActivateTask(TTaskCall entry,int priority,char* name)
-{
-	int task,occupy;
+void ActivateTask(TTaskCall entry, int priority, char* name) {
+    int task, occupy;
 
-	printf("ActivateTask %s\n",name);
+    printf("ActivateTask %s\n", name);
 
-	task=RunningTask;
+    task = RunningTask;
 
-	occupy=FreeTask;
-	FreeTask=TaskQueue[occupy].ref;
+    occupy = FreeTask;
+    FreeTask = TaskQueue[occupy].ref;
 
-	TaskQueue[occupy].priority=priority;
-	TaskQueue[occupy].ceiling_priority=priority;
-	TaskQueue[occupy].name=name;
-	TaskQueue[occupy].entry=entry;
-	
-	Schedule(occupy,INSERT_TO_TAIL);
-	
-	if(task!=RunningTask)
-	{
-		Dispatch(task);
-	}
+    TaskQueue[occupy].priority = priority;
+    TaskQueue[occupy].name = name;
+    TaskQueue[occupy].entry = entry;
 
-	printf("End of ActivateTask %s\n",name);
+    Schedule(occupy, INSERT_TO_TAIL);
 
+    if (task != RunningTask) {
+        Dispatch(task);
+    }
+
+    printf("End of ActivateTask %s\n", name);
 }
 
-void TerminateTask(void)
-{
-	int task;
+void TerminateTask(void) {
+    int task;
 
-	task=RunningTask;
+    task = RunningTask;
 
-	printf("TerminateTask %s\n",TaskQueue[task].name);
+    printf("TerminateTask %s\n", TaskQueue[task].name);
 
-	RunningTask=TaskQueue[task].ref;
+    RunningTask = TaskQueue[task].ref;
 
-	TaskQueue[task].ref=FreeTask;
+    TaskQueue[task].ref = FreeTask;
+    TaskQueue[task].name = NULL; // Очищаем имя для избежания "Schedule (null)"
+    FreeTask = task;
 
-	FreeTask=task;
-
-	printf("End of TerminateTask %s\n",TaskQueue[task].name);
-
+    printf("End of TerminateTask %s\n", TaskQueue[task].name ? TaskQueue[task].name : "(null)");
 }
 
-void Schedule(int task,int mode)
-{
-	int cur,prev;
-	int priority;
+void Schedule(int task, int mode) {
+    int cur, prev;
+    int priority;
 
-	printf("Schedule %s\n",TaskQueue[task].name);
+    if (TaskQueue[task].name == NULL) {
+        printf("Schedule: Task %d has no name, skipping\n", task);
+        return;
+    }
 
-	cur=RunningTask;
-	prev=-1;
+    printf("Schedule %s\n", TaskQueue[task].name);
 
-	priority=TaskQueue[task].ceiling_priority;
+    cur = RunningTask;
+    prev = -1;
 
-	while(cur!=-1 && TaskQueue[cur].ceiling_priority > priority)
-	{
-		prev=cur;
-		cur=TaskQueue[cur].ref;
-	}
+    priority = TaskQueue[task].priority;
 
-	if(mode==INSERT_TO_TAIL)
-	{
-		while(cur!=-1 && TaskQueue[cur].ceiling_priority == priority)
-		{
-			prev=cur;
-			cur=TaskQueue[cur].ref;
-		}
-	}
+    while (cur != -1 && TaskQueue[cur].priority > priority) {
+        prev = cur;
+        cur = TaskQueue[cur].ref;
+    }
 
-	TaskQueue[task].ref=cur;
+    if (mode == INSERT_TO_TAIL) {
+        while (cur != -1 && TaskQueue[cur].priority == priority) {
+            prev = cur;
+            cur = TaskQueue[cur].ref;
+        }
+    }
 
-	if(prev==-1) RunningTask=task;
-	else TaskQueue[prev].ref=task;
+    TaskQueue[task].ref = cur;
 
-	printf("End of Schedule %s\n",TaskQueue[task].name);
+    if (prev == -1) RunningTask = task;
+    else TaskQueue[prev].ref = task;
 
+    printf("End of Schedule %s\n", TaskQueue[task].name);
 }
 
-void Dispatch(int task)
-{
-	printf("Dispatch\n");
+void Dispatch(int task) {
+    printf("Dispatch\n");
 
-	do
-	{
-		TaskQueue[RunningTask].entry();
-	}
-	while(RunningTask!=task);
+    // Выполняем только текущую задачу с наивысшим приоритетом
+    if (RunningTask != -1) {
+        TaskQueue[RunningTask].entry();
+    }
 
-	printf("End of Dispatch\n");
-
+    printf("End of Dispatch\n");
 }
