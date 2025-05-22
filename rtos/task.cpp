@@ -80,11 +80,12 @@ void TerminateTask(void) {
                 break;
             }
             else {
-                //taskToResume = curr;
+                //taskToResume = curr; //и смех и грех сделайте что то с этим ифом радибога я боюсь все сломать
                 //ResumeTask(curr);
                 RunningTask = curr;
                 break;
             }
+
             curr = TaskQueue[curr].ref;
         }
         if (RunningTask != -1) break;
