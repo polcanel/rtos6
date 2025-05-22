@@ -19,8 +19,13 @@ void ActivateTask(TTaskCall entry, int priority, char* name) {
     TaskQueue[occupy].name = name;
     TaskQueue[occupy].entry = entry;
     TaskQueue[occupy].ref = -1;
+    TaskQueue[occupy].suspended = 0;
 
     Schedule(occupy, INSERT_TO_TAIL);
+
+    if (task != -1 && TaskQueue[task].priority < priority && !TaskQueue[task].suspended) {
+        SuspendTask(task);
+    }
 
     if (task != RunningTask) {
         Dispatch(task);
@@ -57,24 +62,69 @@ void TerminateTask(void) {
         }
     }
 
-    RunningTask = -1; // После завершения задачи выбираем новую
-    
-    for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
-        if (PriorityQueues[i].head != -1) {
-            RunningTask = PriorityQueues[i].head;
-            break;
-        }
-    }
-
-    Dispatch(RunningTask); // Выбираем следующую задачу
 
     printf("End of TerminateTask %s\n", TaskQueue[task].name ? TaskQueue[task].name : "(null)");
-
     TaskQueue[task].ref = FreeTask;
     TaskQueue[task].name = NULL;
+    TaskQueue[task].suspended = 0;
     FreeTask = task;
 
+
+
+    RunningTask = -1;
+    for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
+        int curr = PriorityQueues[i].head;
+        while (curr != -1) {
+            if (!TaskQueue[curr].suspended) {
+                RunningTask = curr;
+                break;
+            }
+            else {
+                //taskToResume = curr;
+                //ResumeTask(curr);
+                RunningTask = curr;
+                break;
+            }
+            curr = TaskQueue[curr].ref;
+        }
+        if (RunningTask != -1) break;
+    }
+
+    if (RunningTask != -1) {
+        Dispatch(RunningTask);
+    }
     
+
+    //RunningTask = -1; // После завершения задачи выбираем новую
+    //for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
+    //    if (PriorityQueues[i].head != -1) {
+    //        RunningTask = PriorityQueues[i].head;
+    //        break;
+    //    }
+    //}
+
+    //Dispatch(RunningTask); // Выбираем следующую задачу    
+}
+
+
+void SuspendTask(int task) {
+    //int task = RunningTask;
+    if (task != -1) {
+        printf("SuspendTask %s\n", TaskQueue[task].name);
+        TaskQueue[task].suspended = 1;
+        if (setjmp(TaskQueue[task].context) == 0) {
+            // Сохраняем контекст и возвращаемся к Dispatch
+            return;
+        }
+    }
+}
+
+void ResumeTask(int task) {
+    if (task != -1 && TaskQueue[task].suspended) {
+        printf("ResumeTask %s\n", TaskQueue[task].name);
+        TaskQueue[task].suspended = 0;
+        longjmp(TaskQueue[task].context, 1); // Возвращаемся к точке прерывания
+    }
 }
 
 void Schedule(int task, int mode) {
@@ -108,14 +158,29 @@ void Schedule(int task, int mode) {
     }
 
     // Выбираем новую задачу для выполнения
+
     int i;
+    RunningTask = -1;
+    for (i = MAX_PRIORITY - 1; i >= 0; i--) {
+        int curr = PriorityQueues[i].head;
+        while (curr != -1) {
+            if (!TaskQueue[curr].suspended) {
+                RunningTask = curr;
+                break;
+            }
+            curr = TaskQueue[curr].ref;
+        }
+        if (RunningTask != -1) break;
+    }
+
+    /*int i;
     RunningTask = -1;
     for (i = MAX_PRIORITY - 1; i >= 0; i--) {
         if (PriorityQueues[i].head != -1) {
             RunningTask = PriorityQueues[i].head;
             break;
         }
-    }
+    }*/
 
     printf("End of Schedule %s\n", TaskQueue[task].name);
 }
@@ -123,9 +188,24 @@ void Schedule(int task, int mode) {
 void Dispatch(int task) {
     printf("Dispatch\n");
 
-    if (RunningTask != -1) {
+    /*if (RunningTask != -1) {
+        TaskQueue[RunningTask].entry();
+    }*/
+
+
+    static int prev_task = -1; // Сохраняем предыдущую задачу для возобновления
+
+    // Если текущая задача завершена, возобновляем приостановленные задачи
+    if (task != -1 && task != RunningTask && prev_task != -1 && TaskQueue[prev_task].suspended) {
+        ResumeTask(prev_task);
+    }
+
+    if (RunningTask != -1 && !TaskQueue[RunningTask].suspended) {
         TaskQueue[RunningTask].entry();
     }
+
+    prev_task = RunningTask;
+
 
     printf("End of Dispatch\n");
 }

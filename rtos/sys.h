@@ -3,6 +3,7 @@
 /****************************************/
 
 #include "defs.h"
+#include <setjmp.h> // Для сохранения контекста
 
 #define INSERT_TO_TAIL 1
 #define INSERT_TO_HEAD 0
@@ -12,6 +13,8 @@ typedef struct Type_Task {
     int priority;
     void (*entry)(void);
     char* name;
+    int suspended;
+    jmp_buf context; // Сохраняем контекст выполнения
 } TTask;
 
 typedef struct Type_resource {
@@ -41,3 +44,5 @@ extern int FreeResource;
 
 void Schedule(int task, int mode);
 void Dispatch(int task);
+void SuspendTask(int task);
+void ResumeTask(int task);
