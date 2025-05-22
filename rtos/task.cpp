@@ -58,13 +58,23 @@ void TerminateTask(void) {
     }
 
     RunningTask = -1; // После завершения задачи выбираем новую
-    Dispatch(-1); // Выбираем следующую задачу
+    
+    for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
+        if (PriorityQueues[i].head != -1) {
+            RunningTask = PriorityQueues[i].head;
+            break;
+        }
+    }
+
+    Dispatch(RunningTask); // Выбираем следующую задачу
+
+    printf("End of TerminateTask %s\n", TaskQueue[task].name ? TaskQueue[task].name : "(null)");
 
     TaskQueue[task].ref = FreeTask;
     TaskQueue[task].name = NULL;
     FreeTask = task;
 
-    printf("End of TerminateTask %s\n", TaskQueue[task].name ? TaskQueue[task].name : "(null)");
+    
 }
 
 void Schedule(int task, int mode) {
