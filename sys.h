@@ -11,7 +11,6 @@ typedef struct Type_Task
 {
 	int ref;
 	int priority;
-	int ceiling_priority;
 	void (*entry)(void);
 	char* name;
 
@@ -25,9 +24,24 @@ typedef struct Type_resource
 
 } TResource;
 
-extern TTask TaskQueue[MAX_TASK];
+typedef struct Type_event
+{
+	int event_id;
+	int signaled;
 
+} TEvent;
+
+typedef struct Type_priority_queue
+{
+	int head;
+	int tail;
+
+} TPriorityQueue;
+
+extern TTask TaskQueue[MAX_TASK];
+extern TPriorityQueue PriorityQueues[MAX_PRIORITY];
 extern TResource ResourceQueue[MAX_RES];
+extern TEvent EventQueue[MAX_EVENTS];
 
 extern int RunningTask;
 

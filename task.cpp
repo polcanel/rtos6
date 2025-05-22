@@ -18,9 +18,9 @@ void ActivateTask(TTaskCall entry, int priority, char* name)
 	FreeTask = TaskQueue[occupy].ref;
 
 	TaskQueue[occupy].priority = priority;
-	TaskQueue[occupy].ceiling_priority = priority;
 	TaskQueue[occupy].name = name;
 	TaskQueue[occupy].entry = entry;
+	TaskQueue[occupy].ref = -1;
 
 	Schedule(occupy, INSERT_TO_TAIL);
 
@@ -41,10 +41,33 @@ void TerminateTask(void)
 
 	printf("TerminateTask %s\n", TaskQueue[task].name);
 
+	int priority = TaskQueue[task].priority;
+	if (PriorityQueues[priority].head == task) {
+		PriorityQueues[priority].head = TaskQueue[task].ref;
+		if (PriorityQueues[priority].head == -1) {
+			PriorityQueues[priority].tail = -1;
+		}
+	}
+	else {
+		int prev = PriorityQueues[priority].head;
+		while (prev != -1 && TaskQueue[prev].ref != task) {
+			prev = TaskQueue[prev].ref;
+		}
+		if (prev != -1) {
+			TaskQueue[prev].ref = TaskQueue[task].ref;
+			if (PriorityQueues[priority].tail == task) {
+				PriorityQueues[priority].tail = prev;
+			}
+		}
+	}
+
+	RunningTask = -1;
+	Dispatch(-1);
+
 	RunningTask = TaskQueue[task].ref;
 
 	TaskQueue[task].ref = FreeTask;
-
+	TaskQueue[task].name = NULL;
 	FreeTask = task;
 
 	printf("End of TerminateTask %s\n", TaskQueue[task].name);
@@ -53,48 +76,53 @@ void TerminateTask(void)
 
 void Schedule(int task, int mode)
 {
-	int cur, prev;
 	int priority;
+
+	if (TaskQueue[task].name == NULL) {
+		printf("Schedule: Task %d has no name, skipping\n", task);
+		return;
+	}
 
 	printf("Schedule %s\n", TaskQueue[task].name);
 
-	cur = RunningTask;
-	prev = -1;
+	priority = TaskQueue[task].priority;
 
-	priority = TaskQueue[task].ceiling_priority;
-
-	while (cur != -1 && TaskQueue[cur].ceiling_priority > priority)
-	{
-		prev = cur;
-		cur = TaskQueue[cur].ref;
+	if (PriorityQueues[priority].head == -1) {
+		PriorityQueues[priority].head = task;
+		PriorityQueues[priority].tail = task;
+		TaskQueue[task].ref = -1;
 	}
-
-	if (mode == INSERT_TO_TAIL)
-	{
-		while (cur != -1 && TaskQueue[cur].ceiling_priority == priority)
-		{
-			prev = cur;
-			cur = TaskQueue[cur].ref;
+	else {
+		if (mode == INSERT_TO_TAIL) {
+			TaskQueue[PriorityQueues[priority].tail].ref = task;
+			PriorityQueues[priority].tail = task;
+			TaskQueue[task].ref = -1;
+		}
+		else {
+			TaskQueue[task].ref = PriorityQueues[priority].head;
+			PriorityQueues[priority].head = task;
 		}
 	}
 
-	TaskQueue[task].ref = cur;
-
-	if (prev == -1) RunningTask = task;
-	else TaskQueue[prev].ref = task;
+	int i;
+	RunningTask = -1;
+	for (i = MAX_PRIORITY - 1; i >= 0; i--) {
+		if (PriorityQueues[i].head != -1) {
+			RunningTask = PriorityQueues[i].head;
+			break;
+		}
+	}
 
 	printf("End of Schedule %s\n", TaskQueue[task].name);
-
 }
 
 void Dispatch(int task)
 {
 	printf("Dispatch\n");
 
-	do
-	{
+	if (RunningTask != -1) {
 		TaskQueue[RunningTask].entry();
-	} while (RunningTask != task);
+	}
 
 	printf("End of Dispatch\n");
 

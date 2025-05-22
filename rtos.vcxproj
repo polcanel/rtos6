@@ -132,6 +132,7 @@
     <ClInclude Include="sys.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="event.cpp" />
     <ClCompile Include="global.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="resource.cpp" />

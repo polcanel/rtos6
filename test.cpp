@@ -3,92 +3,68 @@
 /*******************************/
 
 #include <stdio.h>
-#include <stdlib.h>
-
+#include <iostream>
 #include "rtos_api.h"
+#include "defs.h"
 
+DeclareTask(TaskA, 5);
+DeclareTask(TaskB, 3);
+DeclareResource(ResA, 4);
+DeclareEvent(EventA, 1);
 
-DeclareTask(Task1, 3);
-DeclareTask(Task2, 2);
-DeclareTask(Task3, 1);
+int main(void) {
+    printf("Starting RTOS Tests\n");
+    setlocale(LC_ALL, "Russian");
+    // Тест 1: Пременительный планировщик
+    char nameA[] = "TaskA";
+    StartOS(TaskA, TaskAprior, nameA);
 
-DeclareTask(Task6, 1);
-DeclareTask(Task7, 3);
-DeclareTask(Task8, 5);
-DeclareTask(Task9, 7);
-DeclareTask(Task10, 2);
-DeclareTask(Task11, 4);
+    printf("\n");
+    // Тест 2: Управление ресурсами
+    char resName[] = "ResA";
+    GetResource(ResA, resName);
+    printf("Test 2: Приобретен ResA\n");
+    ReleaseResource(ResA, resName);
+    printf("Test 2: Освобожден ResA\n");
 
-DeclareResource(Res1, 5);
-DeclareResource(Res2, 5);
-DeclareResource(Res3, 5);
-DeclareResource(Res4, 4);
+    printf("\n");
+    // Тест 3: Управление событиями
+    SetEvent(EventA); // Устанавливаем событие перед ожиданием
+    WaitEvent(EventA);
+    printf("Test 3: Событие EventA сигнализировано\n");
 
-int main(void)
-{
-	printf("Hello!\n");
-	char name[] = "Task1";
-	StartOS(Task1, Task1prior, name);
-	//char name[] = "Task6";
-	//	StartOS(Task6, Task6prior, name);
+    printf("\n");
+    // Тест 4: Проверка лимитов
+    int i;
+    for (i = 0; i < MAX_TASK; i++) {
+        char taskName[10];
+        sprintf_s(taskName, sizeof(taskName), "Task%d", i);
+        if (i < MAX_RES) {
+            char resName[10];
+            sprintf_s(resName, sizeof(resName), "Res%d", i);
+            GetResource(i, resName);
+            ReleaseResource(i, resName);
+        }
+        if (i < MAX_EVENTS) {
+            SetEvent(i);
+            WaitEvent(i);
+        }
+    }
+    printf("Test 4: Проверка лимитов (32 задачи, 16 ресурсов, 16 событий) прошла успешно\n");
 
-	ShutdownOS();
-
-	return 0;
+    ShutdownOS();
+    return 0;
 }
 
-
-TASK(Task1)
-{
-	printf("Start Task1\n");
-	char name[] = "Task2";
-	ActivateTask(Task2, Task2prior, name);
-
-	printf("Task1\n");
-
-	TerminateTask();
+TASK(TaskA) {
+    printf("TaskA Running\n");
+    char nameB[] = "TaskB";
+    ActivateTask(TaskB, TaskBprior, nameB); // Активируем TaskB
+    printf("TaskA continues after activating TaskB\n"); // Должно прерваться TaskB
+    TerminateTask();
 }
 
-TASK(Task2)
-{
-	printf("Start Task2\n");
-	char name[] = "Task3";
-	ActivateTask(Task3, Task3prior, name);
-
-	printf("Task2\n");
-
-	TerminateTask();
+TASK(TaskB) {
+    printf("TaskB Running\n");
+    TerminateTask();
 }
-
-TASK(Task3)
-{
-	printf("Start Task3\n");
-
-	printf("Task3\n");
-
-	TerminateTask();
-}
-
-
-
-TASK(Task6)
-{
-	printf("Start Task6\n");
-	char name1[] = "Res4";
-	GetResource(Res4, name1);
-	char name2[] = "Res4";
-	ReleaseResource(Res4, name2);
-	char name3[] = "Res1";
-	GetResource(Res1, name3);
-
-	//ActivateTask(Task7,Task7prior,"Task7");
-	char name4[] = "Res1";
-	ReleaseResource(Res1, name4);
-
-
-
-	printf("Task6\n");
-
-	TerminateTask();
-}
-

@@ -33,6 +33,17 @@ int StartOS(TTaskCall entry, int priority, char* name)
 
 	ResourceQueue[MAX_RES - 1].priority = -1;
 
+	for (i = 0; i < MAX_EVENTS; i++)
+	{
+		EventQueue[i].event_id = i;
+		EventQueue[i].signaled = 0;
+	}
+
+	for (i = 0; i < MAX_PRIORITY; i++)
+	{
+		PriorityQueues[i].head = -1;
+		PriorityQueues[i].tail = -1;
+	}
 
 	ActivateTask(entry, priority, name);
 

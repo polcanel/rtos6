@@ -9,6 +9,9 @@ enum {TaskID##prior=priority}
 #define DeclareResource(ResID,priority)\
 enum {ResID=priority}
 
+#define DeclareEvent(EventID, index) \
+enum {EventID=index}
+
 #define TASK(TaskID) void TaskID(void)
 
 typedef void TTaskCall(void);
@@ -21,3 +24,6 @@ void ShutdownOS();
 
 void GetResource(int priority, char* name);
 void ReleaseResource(int priority, char* name);
+
+void WaitEvent(int event_id);
+void SetEvent(int event_id);
