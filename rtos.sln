@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32825.248
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rtos", "rtos.vcxproj", "{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Debug|x64.ActiveCfg = Debug|x64
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Debug|x64.Build.0 = Debug|x64
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Debug|x86.ActiveCfg = Debug|Win32
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Debug|x86.Build.0 = Debug|Win32
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Release|x64.ActiveCfg = Release|x64
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Release|x64.Build.0 = Release|x64
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Release|x86.ActiveCfg = Release|Win32
+		{7BBF2EA1-E25B-4B67-9C75-D313848B3F85}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {78EF7242-E2CD-4B31-A6AA-B3D442198845}
+	EndGlobalSection
+EndGlobal
