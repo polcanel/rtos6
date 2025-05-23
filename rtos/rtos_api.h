@@ -20,8 +20,8 @@ void ActivateTask(TTaskCall entry, int priority, char* name);
 void TerminateTask(void);
 int StartOS(TTaskCall entry, int priority, char* name);
 void ShutdownOS();
-void GetResource(int priority, char* name);
-void ReleaseResource(int priority, char* name);
-void InitResource(int priority, char* name); //are we allowed to do that?
+void P(char* name);
+void V(char* name);
+void InitPVS(char* name);
 void WaitEvent(int event_id);
 void SetEvent(int event_id);

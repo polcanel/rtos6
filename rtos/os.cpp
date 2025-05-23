@@ -23,11 +23,9 @@ int StartOS(TTaskCall entry, int priority, char* name) {
     TaskQueue[MAX_TASK - 1].ref = -1;
 
     for (int i = 0; i < MAX_RES; i++) {
-        ResourceQueue[i].priority = i + 1;
-        ResourceQueue[i].task = -1;
-        ResourceQueue[i].name = NULL;
+        SemaphoreQueue[i].task = -1;
+        SemaphoreQueue[i].name = NULL;
     }
-    ResourceQueue[MAX_RES - 1].priority = -1;
 
     for (i = 0; i < MAX_EVENTS; i++) {
         EventQueue[i].event_id = i;
