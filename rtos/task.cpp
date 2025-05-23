@@ -70,7 +70,7 @@ void TerminateTask(void) {
     FreeTask = task;
 
 
-
+    int taskToResume = -1;
     RunningTask = -1;
     for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
         int curr = PriorityQueues[i].head;
@@ -81,9 +81,10 @@ void TerminateTask(void) {
             }
             else {
                 //taskToResume = curr; //и смех и грех сделайте что то с этим ифом радибога я боюсь все сломать
-                //ResumeTask(curr);
                 RunningTask = curr;
-                break;
+                //ResumeTask(curr);
+                
+                return;
             }
 
             curr = TaskQueue[curr].ref;
@@ -206,7 +207,7 @@ void Dispatch(int task) {
     }
 
     prev_task = RunningTask;
-
+    
 
     printf("End of Dispatch\n");
 }

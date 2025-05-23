@@ -82,6 +82,8 @@ void SetEvent(int event_id) {
         for (int i = 0; i < MAX_TASK; i++) {
             if (TaskQueue[i].suspended && TaskQueue[i].waiting_event == event_id) {
                 TaskQueue[i].waiting_event = -1;
+                SuspendTask(RunningTask);
+                RunningTask = i;
                 ResumeTask(i);
                 break;
             }

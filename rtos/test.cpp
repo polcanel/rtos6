@@ -8,7 +8,7 @@
 #include "defs.h"
 
 DeclareTask(TaskA, 3);
-DeclareTask(TaskB, 5);
+DeclareTask(TaskB, 3);
 
 
 DeclareTask(TaskC, 5);
@@ -22,53 +22,30 @@ DeclareTask(Task1, 1);
 DeclareTask(Task2, 2);
 
 
-DeclareResource(ResA, 4);
 DeclareEvent(EventA, 1);
 
 int main(void) {
     printf("Starting RTOS Tests\n");
     setlocale(LC_ALL, "Russian");
-    // Тест 1: Пременительный планировщик
-    //printf("Test 1: Из менее приориетеной задачи вызывается более приоритетная\n");
-    //char nameA[] = "TaskA";
-    //StartOS(TaskA, TaskAprior, nameA);
+     //Тест 1: планировщик
+    printf("Test 1: Из менее приориетеной задачи вызывается более приоритетная\n");
+    char nameA[] = "TaskA";
+    StartOS(TaskA, TaskAprior, nameA);
 
-    //printf("\n");
-    //printf("Test 2: Из более приориетеной задачи вызывается менее приоритетная\n");
-    //char nameC[] = "TaskC";
-    //StartOS(TaskC, TaskCprior, nameC);
+    printf("\n");
+    printf("Test 2: Из более приориетеной задачи вызывается менее приоритетная\n");
+    char nameC[] = "TaskC";
+    StartOS(TaskC, TaskCprior, nameC);
 
-    //printf("\n");
-    //printf("Test 3: Семафоры\n");
-    // Тест 2: Управление ресурсами
-    //char name1[] = "Task1";
-    //StartOS(Task1, Task1prior, name1);
+    printf("\n");
+    printf("Test 3: Семафоры\n");
+     //Тест 2: Управление ресурсами
+    char name1[] = "Task1";
+    StartOS(Task1, Task1prior, name1);
 
-    //printf("\n");
-    // Тест 3: Управление событиями
-    //SetEvent(EventA); // Устанавливаем событие перед ожиданием
-    //WaitEvent(EventA);
-    //printf("Test 3: Событие EventA сигнализировано\n");
-
-    //printf("\n");
-    // Тест 4: Проверка лимитов
-    //int i;
-    //for (i = 0; i < MAX_TASK; i++) {
-    //    char taskName[10];
-    //    sprintf_s(taskName, sizeof(taskName), "Task%d", i);
-    //    if (i < MAX_RES) {
-    //        char resName[10];
-    //        sprintf_s(resName, sizeof(resName), "Res%d", i);
-    //        GetResource(i, resName);
-    //        ReleaseResource(i, resName);
-    //    }
-    //    if (i < MAX_EVENTS) {
-    //        SetEvent(i);
-    //        WaitEvent(i);
-    //    }
-    //}
-    //printf("Test 4: Проверка лимитов (32 задачи, 16 ресурсов, 16 событий) прошла успешно\n");
-    char name[] = "TaskOne(witch wait)";
+    printf("\n");
+    printf("Test 4: События\n");
+    char name[] = "TaskOne(which waits)";
     StartOS(TaskOne, TaskOneprior, name);
 
     ShutdownOS();
@@ -129,13 +106,13 @@ TASK(Task2) {
     printf("Task2 Running\n");
     char resName[] = "ResA";
     P(resName);
-    printf(" forced task2 to end\n");
+    printf("\tforced task2 to end\n");
     TerminateTask();
 }
 
 TASK(TaskOne) {
     printf("TaskOne Running\n");
-    char name[] = "TaskTwo(witch signaled)";
+    char name[] = "TaskTwo(which signaled)";
     ActivateTask(TaskTwo, TaskTwoprior, name);
     WaitEvent(0);
     printf("TaskOne get signal\n");
