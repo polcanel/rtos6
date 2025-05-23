@@ -15,6 +15,10 @@ DeclareTask(TaskC, 5);
 DeclareTask(TaskD, 6);
 DeclareTask(TaskE, 2);
 
+DeclareTask(Task1, 1);
+DeclareTask(Task2, 2);
+
+
 DeclareResource(ResA, 4);
 DeclareEvent(EventA, 1);
 
@@ -32,13 +36,10 @@ int main(void) {
     StartOS(TaskC, TaskCprior, nameC);
 
     printf("\n");
-
+    printf("Test 3: Семафоры\n");
     // Тест 2: Управление ресурсами
-    char resName[] = "ResA";
-    GetResource(ResA, resName);
-    printf("Test 2: Приобретен ResA\n");
-    ReleaseResource(ResA, resName);
-    printf("Test 2: Освобожден ResA\n");
+    char name1[] = "Task1";
+    StartOS(Task1, Task1prior, name1);
 
     printf("\n");
     // Тест 3: Управление событиями
@@ -101,5 +102,30 @@ TASK(TaskD) {
 
 TASK(TaskE) {
     printf("TaskE Running\n");
+    TerminateTask();
+}
+
+TASK(Task1) {
+    printf("Task1 Running\n");
+    char resName[] = "ResA";
+
+    InitResource(ResA, resName);
+
+    GetResource(ResA, resName);
+    printf(" Приобретен ResA by task 1\n");
+
+    char name2[] = "Task2";
+    ActivateTask(Task2, Task2prior, name2); // Активируем TaskB
+    ReleaseResource(ResA, resName);
+    printf("Освобожден ResA by task 1\n");
+
+    TerminateTask();
+}
+
+TASK(Task2) {
+    printf("Task2 Running\n");
+    char resName[] = "ResA";
+    GetResource(ResA, resName);
+    printf(" forced task2 to end\n");
     TerminateTask();
 }

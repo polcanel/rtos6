@@ -17,12 +17,14 @@ int StartOS(TTaskCall entry, int priority, char* name) {
 
     for (i = 0; i < MAX_TASK; i++) {
         TaskQueue[i].ref = i + 1;
+        TaskQueue[i].suspended = 0;
     }
     TaskQueue[MAX_TASK - 1].ref = -1;
 
-    for (i = 0; i < MAX_RES; i++) {
+    for (int i = 0; i < MAX_RES; i++) {
         ResourceQueue[i].priority = i + 1;
         ResourceQueue[i].task = -1;
+        ResourceQueue[i].name = NULL;
     }
     ResourceQueue[MAX_RES - 1].priority = -1;
 
@@ -37,7 +39,7 @@ int StartOS(TTaskCall entry, int priority, char* name) {
         PriorityQueues[i].tail = -1;
     }
 
-    ActivateTask(entry, priority, name);
+     ActivateTask(entry, priority, name);
 
     return 0;
 }
