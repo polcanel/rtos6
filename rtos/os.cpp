@@ -18,6 +18,7 @@ int StartOS(TTaskCall entry, int priority, char* name) {
     for (i = 0; i < MAX_TASK; i++) {
         TaskQueue[i].ref = i + 1;
         TaskQueue[i].suspended = 0;
+        TaskQueue[i].waiting_event = -1;
     }
     TaskQueue[MAX_TASK - 1].ref = -1;
 
@@ -50,22 +51,42 @@ void ShutdownOS() {
 
 void WaitEvent(int event_id) {
     if (event_id >= 0 && event_id < MAX_EVENTS) {
-        int timeout = 10;
-        while (!EventQueue[event_id].signaled && timeout > 0) {
-            timeout--;
+        int task = RunningTask;
+
+        printf("WaitEvent %d by task %s\n", event_id, TaskQueue[task].name);
+
+        TaskQueue[task].waiting_event = event_id;
+        SuspendTask(task);
+        RunningTask = -1;
+
+        for (int i = MAX_PRIORITY - 1; i >= 0; i--) {
+            int curr = PriorityQueues[i].head;
+            while (curr != -1) {
+                if (!TaskQueue[curr].suspended) {
+                    RunningTask = curr;
+                    break;
+                }
+                curr = TaskQueue[curr].ref;
+            }
+            if (RunningTask != -1) break;
         }
-        if (EventQueue[event_id].signaled) {
-            EventQueue[event_id].signaled = 0;
-        }
-        else {
-            printf("WaitEvent %d timed out\n", event_id);
-        }
+
+        Dispatch(RunningTask);
     }
 }
 
 void SetEvent(int event_id) {
     if (event_id >= 0 && event_id < MAX_EVENTS) {
-        EventQueue[event_id].signaled = 1;
+        //EventQueue[event_id].signaled = 1;
+
         printf("SetEvent %d\n", event_id);
+
+        for (int i = 0; i < MAX_TASK; i++) {
+            if (TaskQueue[i].suspended && TaskQueue[i].waiting_event == event_id) {
+                TaskQueue[i].waiting_event = -1;
+                ResumeTask(i);
+                break;
+            }
+        }
     }
 }

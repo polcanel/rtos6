@@ -14,6 +14,7 @@ typedef struct Type_Task {
     void (*entry)(void);
     char* name;
     int suspended;
+    int waiting_event;
     jmp_buf context; // Сохраняем контекст выполнения
 } TTask;
 
