@@ -56,8 +56,9 @@ int main(void) {
         if (i < MAX_RES) {
             char resName[10];
             sprintf_s(resName, sizeof(resName), "Res%d", i);
-            GetResource(i, resName);
-            ReleaseResource(i, resName);
+            InitPVS(resName);
+            P(resName);
+            V(resName);
         }
         if (i < MAX_EVENTS) {
             SetEvent(i);
@@ -108,24 +109,22 @@ TASK(TaskE) {
 TASK(Task1) {
     printf("Task1 Running\n");
     char resName[] = "ResA";
-
-    InitResource(ResA, resName);
-
-    GetResource(ResA, resName);
+    InitPVS(resName);
+    P(resName);
     printf(" Приобретен ResA by task 1\n");
 
     char name2[] = "Task2";
     ActivateTask(Task2, Task2prior, name2); // Активируем TaskB
-    ReleaseResource(ResA, resName);
-    printf("Освобожден ResA by task 1\n");
 
+    V(resName);
+    printf("Освобожден ResA by task 1\n");
     TerminateTask();
 }
 
 TASK(Task2) {
     printf("Task2 Running\n");
     char resName[] = "ResA";
-    GetResource(ResA, resName);
+    P(resName);
     printf(" forced task2 to end\n");
     TerminateTask();
 }

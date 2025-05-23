@@ -17,11 +17,10 @@ typedef struct Type_Task {
     jmp_buf context; // Сохраняем контекст выполнения
 } TTask;
 
-typedef struct Type_resource {
+typedef struct Type_semaphore {
     int task;
-    int priority;
     char* name;
-} TResource;
+} TSemaphore;
 
 typedef struct {
     int event_id;
@@ -36,7 +35,7 @@ typedef struct {
 
 extern TTask TaskQueue[MAX_TASK];
 extern PriorityQueue PriorityQueues[MAX_PRIORITY];
-extern TResource ResourceQueue[MAX_RES];
+extern TSemaphore SemaphoreQueue[MAX_RES];
 extern TEvent EventQueue[MAX_EVENTS];
 extern int RunningTask;
 extern int FreeTask;
@@ -46,4 +45,3 @@ void Schedule(int task, int mode);
 void Dispatch(int task);
 void SuspendTask(int task);
 void ResumeTask(int task);
-void InitResource(int priority, char* name);
